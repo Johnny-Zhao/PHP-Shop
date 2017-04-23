@@ -2,7 +2,7 @@
 require_once '../lib/string.func.php';
 $filename="des_big.jpg";
 //thumb($filename);
-
+thumb($filename,"image_50/".$filename,50,50,true);
 function thumb($filename,$destination=null,$dst_w=null,$dst_h=null,$isReservedSource=false,$scale=0.5){
     list($src_w,$src_h,$imagetype)=getimagesize($filename);
     if(is_null($dst_w)||is_null($dst_h)){

@@ -1,15 +1,15 @@
 <?php
 require_once 'string.func.php';
-//通过GD库做验证码
-function verifyImage($type = 1,$length = 4,$pixel = 0,$line = 0,$sess_name = "verify1")
+// 通过GD库做验证码
+function verifyImage($type = 1, $length = 4, $pixel = 0, $line = 0, $sess_name = "verify1")
 {
-    //创建画布
+    // 创建画布
     $width = 80;
     $height = 28;
     $image = imagecreatetruecolor($width, $height);
     $white = imagecolorallocate($image, 255, 255, 255);
     $black = imagecolorallocate($image, 0, 0, 0);
-    //用填充矩形填充画布
+    // 用填充矩形填充画布
     imagefilledrectangle($image, 1, 1, $width - 2, $height - 2, $white);
     $chars = buildRandomString($type, $length);
     $_SESSION[$sess_name] = $chars;
@@ -48,41 +48,92 @@ function verifyImage($type = 1,$length = 4,$pixel = 0,$line = 0,$sess_name = "ve
 
 /**
  * 生成相应缩略图
- * @param string $filename
- * @param string $destination
- * @param int $dst_w
- * @param int $dst_h
- * @param bool $isReservedSource
- * @param number $scale
+ * 
+ * @param string $filename            
+ * @param string $destination            
+ * @param int $dst_w            
+ * @param int $dst_h            
+ * @param bool $isReservedSource            
+ * @param number $scale            
  * @return string
  */
-function thumb($filename,$destination=null,$dst_w=null,$dst_h=null,$isReservedSource=true,$scale=0.5){
-    list($src_w,$src_h,$imagetype)=getimagesize($filename);
-    if(is_null($dst_w)||is_null($dst_h)){
-        $dst_w=ceil($src_w*$scale);
-        $dst_h=ceil($src_h*$scale);
+function thumb($filename, $destination = null, $dst_w = null, $dst_h = null, $isReservedSource = true, $scale = 0.5)
+{
+    list ($src_w, $src_h, $imagetype) = getimagesize($filename);
+    if (is_null($dst_w) || is_null($dst_h)) {
+        $dst_w = ceil($src_w * $scale);
+        $dst_h = ceil($src_h * $scale);
     }
-    $mime=image_type_to_mime_type($imagetype);
-    //echo $mime; //image/jpeg
-    //一个字符串加上了括号就是函数
-    $creatFun=str_replace("/","createfrom",$mime);
-    $outFun=str_replace("/", null, $mime);
-    $src_image=$creatFun($filename);
-    $dst_image=imagecreatetruecolor($dst_w, $dst_h);
-    imagecopyresampled($dst_image, $src_image, 0,0,0,0, $dst_w, $dst_h, $src_w, $src_h);
-    if($destination&&!file_exists(dirname($destination))){
-        mkdir(dirname($destination),0777,true);
+    $mime = image_type_to_mime_type($imagetype);
+    // echo $mime; //image/jpeg
+    // 一个字符串加上了括号就是函数
+    // 根据文件类型创建相关类型画布
+    $creatFun = str_replace("/", "createfrom", $mime);
+    $outFun = str_replace("/", null, $mime);
+    
+    $src_image = $creatFun($filename);
+    $dst_image = imagecreatetruecolor($dst_w, $dst_h);
+    imagecopyresampled($dst_image, $src_image, 0, 0, 0, 0, $dst_w, $dst_h, $src_w, $src_h);
+    if ($destination && ! file_exists(dirname($destination))) {
+        mkdir(dirname($destination), 0777, true);
     }
-    $dstFilename=$destination==null?getUniName().".".getExt($filename):$destination;
-    $outFun($dst_image,$dstFilename);
+    $dstFilename = $destination == null ? getUniName() . "." . getExt($filename) : $destination;
+    $outFun($dst_image, $dstFilename);
     imagedestroy($src_image);
     imagedestroy($dst_image);
-    if(!$isReservedSource){
+    if (! $isReservedSource) {
         unlink($filename);
     }
     return $dstFilename;
 }
 
+/**
+ * 创建文字水印
+ * 
+ * @param string $filename            
+ * @param string $text            
+ * @param string $fontfile            
+ */
+function waterText($filename, $text = "imooc.com", $fontfile = "MSYH.TTC")
+{
+    $fileInfo = getimagesize($filename);
+    $mime = $fileInfo['mime'];
+    $createFun = str_replace("/", "createfrom", $mime);
+    $outFun = str_replace("/", null, $mime);
+    $image = $createFun($filename);
+    $color = imagecolorallocatealpha($image, 255, 0, 0, 50);
+    $fontfile = "../fonts/{$fontfile}";
+    imagettftext($image, 14, 0, 0, 14, $color, $fontfile, $text);
+    //header("content-type:" . $mime);
+    $outFun($image, $filename);
+    imagedestroy($image);
+}
 
-
+/**
+ * 添加水印图片
+ * @param string $dstFile
+ * @param string $srcFile
+ * @param number $pct
+ */
+function waterPic($dstFile, $srcFile = "../images/logo.jpg", $pct = 30)
+{
+    $srcFileInfo = getimagesize($srcFile);
+    $src_w = $srcFileInfo[0];
+    $src_h = $srcFileInfo[1];
+    $dstFileInfo = getimagesize($dstFile);
+    $srcMime = $srcFileInfo['mime'];
+    $dstMime = $dstFileInfo['mime'];
+    $createSrcFun = str_replace("/", "createfrom", $srcMime);
+    $createDstFun = str_replace("/", "createfrom", $dstMime);
+    $outDstFun = str_replace("/", null, $dstMime);
+    $dst_im = $createDstFun($dstFile);
+    $src_im = $createSrcFun($srcFile);
+    //合并图片
+    imagecopymerge($dst_im, $src_im, 0, 0, 0, 0, $src_w, $src_h, $pct);
+    //header("content-type:" . $dstMime);
+    //保存图片$dstFile
+    $outDstFun($dst_im, $dstFile);
+    imagedestroy($src_im);
+    imagedestroy($dst_im);
+}
 

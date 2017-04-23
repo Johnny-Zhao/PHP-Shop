@@ -5,10 +5,11 @@
  */
 function connect()
 {
-    //$link = mysqli_connect(DB_HOST, DB_USER, DB_PWD) or die("数据库连接失败Error:" . mysqli_errno() . ":" . mysqli_error());
+    global $link;
+    $link = mysqli_connect(DB_HOST, DB_USER, DB_PWD,DB_DBNAME) or die("数据库连接失败Error:" . mysqli_errno() . ":" . mysqli_error());
     //mysqli_set_charset($link, DB_CHAREST);
     //mysqli_select_db($link,DB_DBNAME) or die("用户名错误");
-    $link=new mysqli("localhost", "root", "960223", "shop");
+    //$link=new mysqli("localhost", "root", "960223", "shop");
     //$link= new mysqli(DB_HOST,DB_USER,DB_PWD,DB_DBNAME);
     if ($link->connect_error) {
         die("连接失败: " . $link->connect_error);
@@ -25,11 +26,24 @@ function connect()
  */
 function insert($table, $array)
 {
+    global $link;
     $keys = "".join(",", array_keys($array));
     $vals = "'" . join("','", array_values($array)) . "'";
     $sql = "INSERT INTO {$table} ({$keys}) VALUES ({$vals})";
-    mysqli_query(connect(),$sql);
-    return mysqli_insert_id(connect());
+//     mysqli_query(connect(),$sql);
+//     return mysqli_insert_id(connect());
+    /*这里不能用connect()是因为使用connect()时又执行了一次数据库连接，
+     就拿不到mysqli_insert_id的最新一次id,获取到的永远都是0;*/
+    //print_r($sql);exit;
+    //$link = new mysqli("localhost", "root", "960223", "shop");
+    //不能用mysqli_query(connect(), $sql);
+    $result=mysqli_query($link, $sql);
+    //不能用mysqli_insert_id(connect());
+    if($result){
+        return mysqli_insert_id($link);
+    }else{
+        return false;
+    }
 }
 
 /**
@@ -43,6 +57,7 @@ function insert($table, $array)
  //未解决更新
 function update($table, $array, $where = null)
 {
+    global $link;
     //定义放在循环外面！！！！！！！
     $str = "";
     foreach ($array as $key => $val) {
@@ -55,9 +70,10 @@ function update($table, $array, $where = null)
     }
     $sql = "update {$table} set {$str} " . ($where == null ? null : " where " . $where);
     //echo $sql;exit;
-    $result=mysqli_query(connect(),$sql);
+    //$link = new mysqli("localhost", "root", "960223", "shop");
+    $result=mysqli_query($link,$sql);
     if($result){
-        return mysqli_affected_rows(connect());
+        return mysqli_affected_rows($link);
     }else{
         return false;     
     }
@@ -71,10 +87,16 @@ function update($table, $array, $where = null)
  */
 function delete($table, $where = null)
 {
+    global $link;
     $where = $where == null ? null : " where " . $where;
     $sql = "delete from {$table}{$where}";
-    mysqli_query(connect(),$sql);
-    return mysqli_affected_rows(connect());
+    //$link = new mysqli("localhost", "root", "960223", "shop");
+    $result=mysqli_query($link,$sql);
+    if($result){
+        return mysqli_affected_rows($link);
+    }else{
+        return false;
+    }
 }
 
 /**
@@ -85,9 +107,14 @@ function delete($table, $where = null)
  */
 function fetchOne($sql)
 {
-    $result = mysqli_query(connect(),$sql);
-    $row=mysqli_fetch_assoc($result);
-    return $row;
+    global $link;
+    $result = mysqli_query($link,$sql);
+    if($result){
+        return mysqli_fetch_assoc($result);
+    }
+    else{
+        return false;
+    }
 }
 
 /**
@@ -99,7 +126,9 @@ function fetchOne($sql)
  */
 function fetchAll($sql)
 {
-    $result = mysqli_query(connect(),$sql);
+    global $link;
+    //$link = new mysqli("localhost", "root", "960223", "shop");
+    $result = mysqli_query($link,$sql);
     while (@$row = mysqli_fetch_assoc($result)) {
         $rows[] = $row;
     }
@@ -114,8 +143,14 @@ function fetchAll($sql)
  */
 function getResultNum($sql)
 {
-    $result = mysqli_query(connect(),$sql);
-    return mysqli_num_rows($result);
+    global $link;
+    //$link = new mysqli("localhost", "root", "960223", "shop");
+    $result = mysqli_query($link,$sql);
+    if($result){
+        return mysqli_num_rows($result);
+    }else{
+        return false;
+    }
 }
 
 /**
@@ -123,5 +158,7 @@ function getResultNum($sql)
  * @return number
  */
 function getInsertId(){
-    return mysqli_insert_id(connect());
+    global $link;
+    //$link = new mysqli("localhost", "root", "960223", "shop");
+    return mysqli_insert_id($link);
 }

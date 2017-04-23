@@ -20,6 +20,20 @@ if($act=="logout"){
 	$mes=delCate($id);
 }elseif($act=="addPro"){
     $mes=addPro();
+}elseif($act=="editPro"){
+    $mes=editPro($id);
+}elseif($act=="delPro"){
+    $mes=delPro($id);
+}elseif($act=="addUser"){
+    $mes=addUser();
+}elseif ($act=="editUser"){
+    $mes=editUser($id);
+}elseif($act=="delUser"){
+    $mes=delUser($id);
+}elseif($act=="waterText"){
+    $mes=doWaterText($id);
+}elseif($act=="waterPic"){
+    $mes=doWaterPic($id);
 }
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">

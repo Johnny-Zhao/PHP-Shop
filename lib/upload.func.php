@@ -1,9 +1,13 @@
-<?php 
+<?php
+
 /**
  * 构建文件上传信息
  */
 function buildInfo()
 {
+    if (! $_FILES) {
+        return;
+    }
     foreach ($_FILES as $v) {
         $i = 0;
         // 单文件
@@ -30,8 +34,11 @@ function uploadFile($path = "uploads", $allowExt = array("gif","jpg","jpeg","png
     if (! file_exists($path)) {
         mkdir($path, 0777, true);
     }
-    $i=0;
+    $i = 0;
     $files = buildInfo();
+    if (! ($files && is_array($files))) {
+        return;
+    }
     foreach ($files as $file) {
         if ($file['error'] == UPLOAD_ERR_OK) {
             // 需要判断下文件是否通过是HTTP POST方式上传上来的
@@ -61,7 +68,7 @@ function uploadFile($path = "uploads", $allowExt = array("gif","jpg","jpeg","png
             $destination = $path . "/" . $filename;
             if (move_uploaded_file($file['tmp_name'], $destination)) {
                 $file['name'] = $filename;
-                unset($file['error'], $file['tmp_name'], $file['type'],$file['size']);
+                unset($file['error'], $file['tmp_name'], $file['type'], $file['size']);
                 $uploadFiles[$i] = $file;
                 $i ++;
             }

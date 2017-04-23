@@ -26,9 +26,12 @@ function addAdmin(){
     $arr['password']=md5($_POST['password']);
     //print_r($arr);
     $mes=insert("shop_admin", $arr);
+    /* print_r($arr);
+    print_r($mes); */
+    //$mes总是返回0
     //!$mes为什么是！未解决
     //如果记录中没有这条所以可以添加
-    if(!$mes){
+    if($mes){
         $mes="添加成功！<br/><a href='addAdmin.php'>继续添加</a>
             |<a href='listAdmin.php'>查看管理员列表</a>";
     }else{
@@ -47,7 +50,7 @@ function editAdmin($id){
     $arr['password']=md5($_POST['password']);
     //print_r($arr);
     //$mes=update("shop_admin", $arr,"id={$id}");
-    if(!(update("shop_admin", $arr,"id='{$id}'"))){
+    if(update("shop_admin", $arr,"id='{$id}'")){
         $mes="编辑成功！<br/><a href='listAdmin.php'>查看管理员列表</a>";
     }else{
         $mes="编辑失败！<br/><a href='listAdmin.php'>重新修改</a>";
@@ -61,7 +64,7 @@ function editAdmin($id){
  * @return string
  */
 function delAdmin($id){
-    if(!delete("shop_admin","id={$id}")){
+    if(delete("shop_admin","id={$id}")){
         $mes="删除成功！<br/><a href='listAdmin.php'>查看管理员列表</a>";
     }else{
         $mes="删除失败！<br/><a href='listAdmin.php'>重新删除</a>";
@@ -121,3 +124,4 @@ function logout(){
     //跳转到登录页面
     header("location:login.php");
 }
+

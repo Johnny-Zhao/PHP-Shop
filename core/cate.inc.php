@@ -5,7 +5,7 @@
  */
 function addCate(){
     $arr=$_POST;
-    if(!(insert("shop_cate", $arr))){
+    if(insert("shop_cate", $arr)){
         $mes="分类添加成功！<br/><a href='addCate.php'>继续添加</a>|<a href='listCate.php'>查看分类</a>";
     }else{
         $mes="添加失败！<br/><a href='addCate.php'>重新添加</a>|<a href='listCate.php'>查看分类</a>";
@@ -30,7 +30,7 @@ function getCateById($id){
  */
 function editCate($where){
     $arr=$_POST;
-    if(!(update("shop_cate", $arr,$where))){
+    if(update("shop_cate", $arr,$where)){
         $mes="分类修改成功！<br/><a href='listCate.php'>查看分类</a>";
     }else{
         $mes="分类修改失败！<br/><a href='listCate.php'>重新修改</a>";
@@ -43,13 +43,20 @@ function editCate($where){
  * @param string $where
  * @return string
  */
-function delCate($where){
-    if(!delete("shop_cate",$where)){
-        $mes="分类删除成功！<br/><a href='listCate.php'>查看分类</a>";
+function delCate($id){
+    $res=checkProExit($id);
+    if(!$res){
+        $where="id=".$id;
+        if(delete("shop_cate",$where)){
+            $mes="分类删除成功！<br/><a href='listCate.php'>查看分类</a>";
+        }else{
+            $mes="分类删除失败！<br/><a href='listCate.php'>重新删除</a>";
+        }
+        return $mes;
     }else{
-        $mes="分类删除失败！<br/><a href='listCate.php'>重新删除</a>";
+        alertMes("不能删除分类,请先删除分类下的商品", "listPro.php");
     }
-    return $mes;
+    
 }
 
 /**
