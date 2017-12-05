@@ -1,5 +1,7 @@
 # Auto detect text files and perform LF normalization
-* text=auto
+*.php linguist-language=PHP
+*.js linguist-language=PHP
+*.css linguist-language=PHP
 
 # Custom for Visual Studio
 *.cs     diff=csharp
